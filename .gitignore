@@ -1,0 +1,11 @@
+# Ignore all Python __pycache__ directories
+__pycache__/
+
+# Ignore all Python compiled bytecode files
+*.pyc
+
+# Ignore all Write-Ahead Log files
+*.wal
+
+# Ignore all .dat files
+*.dat

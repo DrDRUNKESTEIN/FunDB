@@ -2,7 +2,8 @@ import struct
 import time
 import zlib
 from sortedcontainers import sortedlist,SortedKeyList,sorteddict
-
+import SSTable.SSTable as sst
+import sys
 class Memtable:
     def __init__(self,maximum_size_limit:int,log_file_path:str):
         self.maximum_size_limt=maximum_size_limit
@@ -33,6 +34,12 @@ class Memtable:
             f.write(record)
         
         self.data.add((key,value))
+        curr_size=sys.getsizeof(self.data)
+        if(len(self.data)>=self.maximum_size_limt):
+            print("Flushing To Disk.....")
+            sst.SSTable.flush_to_disk(self.data,'SSTable1.dat')
+            self.data.clear()
+            print("Flushed To Disk")
     
     def update_record(self,key:str,value:str,op_type:int=2):
         timestamp = int(time.time_ns())

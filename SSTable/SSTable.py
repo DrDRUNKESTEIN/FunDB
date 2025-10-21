@@ -17,6 +17,8 @@ class SSTable:
             # if index<len(data) and data[index][0]==key:
             #     print(f"{key}: {data[index][1]}")
     
+    
+    
 
             
                 

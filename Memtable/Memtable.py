@@ -39,6 +39,8 @@ class Memtable:
             print("Flushing To Disk.....")
             sst.SSTable.flush_to_disk(self.data,'SSTable1.dat')
             self.data.clear()
+            with open(self.log_file_path,"wb") as f:
+                pass
             print("Flushed To Disk")
     
     def update_record(self,key:str,value:str,op_type:int=2):

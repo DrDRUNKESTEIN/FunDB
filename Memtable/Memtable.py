@@ -4,13 +4,20 @@ import zlib
 from sortedcontainers import sortedlist,SortedKeyList,sorteddict
 import SSTable.SSTable as sst
 import sys
+import threading
 class Memtable:
     def __init__(self,maximum_size_limit:int,log_file_path:str):
         self.maximum_size_limt=maximum_size_limit
         self.log_file_path=log_file_path
         self.data=SortedKeyList(key=lambda x:x[0])  
-    
+        self.ct=1
 
+    def flush_data_async(self,data,log_file_path):
+        print("Flushing To Disk.....")
+        sst.SSTable.flush_to_disk(data, 'SSTable1.dat')
+        with open(log_file_path, "wb") as f:
+            pass
+        print("Flushed To Disk")
     def put(self,key:str,value:str,op_type:int=1):
         timestamp = int(time.time_ns())
         key_bytes = key.encode()
@@ -36,12 +43,20 @@ class Memtable:
         self.data.add((key,value))
         curr_size=sys.getsizeof(self.data)
         if(len(self.data)>=self.maximum_size_limt):
-            print("Flushing To Disk.....")
-            sst.SSTable.flush_to_disk(self.data,'SSTable1.dat')
+            # print("Flushing To Disk.....")
+            # sst.SSTable.flush_to_disk(self.data,'SSTable1.dat')
+            # self.data.clear()
+            # with open(self.log_file_path,"wb") as f:
+            #     pass
+            # print("Flushed To Disk")
+            sst.SSTable.SSTableQueue.append(self)
+            data_to_flush=self.data.copy()
+            log_path=self.log_file_path
+            flushing_thread=threading.Thread(target=self.flush_data_async,args=(data_to_flush,log_path))
             self.data.clear()
-            with open(self.log_file_path,"wb") as f:
-                pass
-            print("Flushed To Disk")
+            self.log_file_path=f'Wal_log{self.ct+1}.wal' # Replace with some logic to auto_generate these log_files
+            self.ct+=1
+            flushing_thread.start()
     
     def update_record(self,key:str,value:str,op_type:int=2):
         timestamp = int(time.time_ns())
